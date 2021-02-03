@@ -4,7 +4,7 @@ import AppError from '../errors/AppError';
 
 import IAddressesRepository from '../database/repositories/IAddressesRepository';
 
-interface IAddressDTO {
+interface IAddress {
   'cep': number | string;
   'logradouro': string;
   'complemento': string;
@@ -17,6 +17,15 @@ interface IAddressDTO {
   'siafi': string;
 }
 
+interface IError {
+  'cep': number;
+  'erro': boolean;
+}
+
+function isError(obj: any): obj is IError {
+  return 'erro' in obj;
+}
+
 @injectable()
 class GetAddress {
   constructor(
@@ -24,22 +33,34 @@ class GetAddress {
     private AddressesRepository: IAddressesRepository,
   ) {}
 
-  public async execute(cepNumber: number): Promise<IAddressDTO> {
+  public async execute(cepNumber: number): Promise<IAddress | IError> {
     try {
       const addressFromDb = await this.AddressesRepository.findByCep(cepNumber);
       if (addressFromDb) return addressFromDb;
+    } catch (e) {
+      throw new AppError('Server error trying to get address from Database', 500);
+    }
 
-      const viaCepResponse = await httpGet<IAddressDTO>(`https://viacep.com.br/ws/${cepNumber}/json/`);
+    try {
+      const viaCepResponse = await httpGet<IAddress | IError>(`https://viacep.com.br/ws/${cepNumber}/json/`);
+      if (isError(viaCepResponse)) {
+        throw new AppError('CEP does not exist');
+      }
+
       const formattedResponse = {
         ...viaCepResponse,
         cep: cepNumber,
       };
 
-      await this.AddressesRepository.create(formattedResponse);
+      try {
+        await this.AddressesRepository.create(formattedResponse);
+      } catch (e) {
+        throw new AppError('Server error trying to save new CEP address on Database', 500);
+      }
 
       return formattedResponse;
     } catch (e) {
-      throw new AppError(e.message || 'Server error on trying to get CEP address', 500);
+      throw new AppError(e.message || 'Server error trying to get ViaCep address', 500);
     }
   }
 }
