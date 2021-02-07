@@ -38,13 +38,13 @@ class GetAddress {
       const addressFromDb = await this.AddressesRepository.findByCep(cepNumber);
       if (addressFromDb) return addressFromDb;
     } catch (e) {
-      throw new AppError('Server error trying to get address from Database', 500);
+      throw new AppError('Erro ao tentar acessar o banco de dados', 500);
     }
 
     try {
       const viaCepResponse = await httpGet<IAddress | IError>(`https://viacep.com.br/ws/${cepNumber}/json/`);
       if (isError(viaCepResponse)) {
-        throw new AppError('CEP does not exist');
+        throw new AppError('CEP inválido');
       }
 
       const formattedResponse = {
@@ -55,12 +55,12 @@ class GetAddress {
       try {
         await this.AddressesRepository.create(formattedResponse);
       } catch (e) {
-        throw new AppError('Server error trying to save new CEP address on Database', 500);
+        throw new AppError('Erro ao tentar salvar endereço no banco de dados', 500);
       }
 
       return formattedResponse;
     } catch (e) {
-      throw new AppError(e.message || 'Server error trying to get ViaCep address', 500);
+      throw new AppError(e.message || 'Erro ao tentar acessar ViaCEP', 500);
     }
   }
 }

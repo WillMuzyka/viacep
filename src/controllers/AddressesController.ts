@@ -15,7 +15,7 @@ class AddressesController {
       return res.json(address);
     } catch (err) {
       next(new AppError(
-        err.message || 'Error getting CEP address information',
+        err.message || 'Erro ao obter informações do CEP',
         err.status || 400,
       ));
     }
