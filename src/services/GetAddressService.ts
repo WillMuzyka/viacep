@@ -5,7 +5,7 @@ import AppError from '../errors/AppError';
 import IAddressesRepository from '../database/repositories/IAddressesRepository';
 
 interface IAddress {
-  'cep': number | string;
+  'cep': string;
   'logradouro': string;
   'complemento': string;
   'bairro': string;
@@ -17,15 +17,6 @@ interface IAddress {
   'siafi': string;
 }
 
-interface IError {
-  'cep': number;
-  'erro': boolean;
-}
-
-function isError(obj: any): obj is IError {
-  return 'erro' in obj;
-}
-
 @injectable()
 class GetAddress {
   constructor(
@@ -33,7 +24,7 @@ class GetAddress {
     private AddressesRepository: IAddressesRepository,
   ) {}
 
-  public async execute(cepNumber: string): Promise<IAddress | IError> {
+  public async execute(cepNumber: string): Promise<IAddress> {
     try {
       const addressFromDb = await this.AddressesRepository.findByCep(cepNumber);
       if (addressFromDb) return addressFromDb;
@@ -42,10 +33,7 @@ class GetAddress {
     }
 
     try {
-      const viaCepResponse = await httpGet<IAddress | IError>(`https://viacep.com.br/ws/${cepNumber}/json/`);
-      if (isError(viaCepResponse)) {
-        throw new AppError('CEP inválido');
-      }
+      const viaCepResponse = await httpGet<IAddress>(`https://viacep.com.br/ws/${cepNumber}/json/`);
 
       const formattedResponse = {
         ...viaCepResponse,
@@ -60,7 +48,7 @@ class GetAddress {
 
       return formattedResponse;
     } catch (e) {
-      throw new AppError(e.message || 'Erro ao tentar acessar ViaCEP', 500);
+      throw new AppError(e.message, 500);
     }
   }
 }
