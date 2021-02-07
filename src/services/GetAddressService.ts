@@ -33,7 +33,7 @@ class GetAddress {
     private AddressesRepository: IAddressesRepository,
   ) {}
 
-  public async execute(cepNumber: number): Promise<IAddress | IError> {
+  public async execute(cepNumber: string): Promise<IAddress | IError> {
     try {
       const addressFromDb = await this.AddressesRepository.findByCep(cepNumber);
       if (addressFromDb) return addressFromDb;

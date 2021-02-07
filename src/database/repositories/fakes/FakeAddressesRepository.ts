@@ -13,7 +13,7 @@ export default class AddressesRepository implements IAddressesRepository {
     return addressData;
   }
 
-  public async findByCep(cep: number): Promise<Address | undefined> {
+  public async findByCep(cep: string): Promise<Address | undefined> {
     const foundAddress = this.fakeRepository.find((address) => cep === address.cep);
     return foundAddress;
   }

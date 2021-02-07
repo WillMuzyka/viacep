@@ -8,7 +8,7 @@ export default class CreateCep1612317523950 implements MigrationInterface {
         columns: [
           {
             name: 'cep',
-            type: 'int',
+            type: 'varchar',
             isPrimary: true,
           },
           {

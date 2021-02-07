@@ -16,7 +16,7 @@ export default class AddressesRepository implements IAddressesRepository {
     return address;
   }
 
-  public async findByCep(cep: number): Promise<Address | undefined> {
+  public async findByCep(cep: string): Promise<Address | undefined> {
     const address = this.ormRepository.findOne(cep);
 
     return address;

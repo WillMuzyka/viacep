@@ -6,8 +6,8 @@ import {
 
 @Entity('address')
 class Address {
-  @PrimaryColumn('int')
-  cep: number;
+  @PrimaryColumn('varchar')
+  cep: string;
 
   @Column()
   logradouro: string;

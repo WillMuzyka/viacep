@@ -7,7 +7,7 @@ class AddressesController {
   // eslint-disable-next-line consistent-return
   public async index(req: Request, res: Response, next: NextFunction): Promise<Response> {
     try {
-      const cepNumber = parseInt(req.params.cep, 10);
+      const cepNumber = req.params.cep;
 
       const getAddress = container.resolve(GetAddressService);
       const address = await getAddress.execute(cepNumber);
