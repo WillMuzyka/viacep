@@ -17,6 +17,15 @@ interface IAddress {
   'siafi': string;
 }
 
+interface IError {
+  'cep': number;
+  'erro': boolean;
+}
+
+function isError(obj: any): obj is IError {
+  return 'erro' in obj;
+}
+
 @injectable()
 class GetAddress {
   constructor(
@@ -24,7 +33,7 @@ class GetAddress {
     private AddressesRepository: IAddressesRepository,
   ) {}
 
-  public async execute(cepNumber: string): Promise<IAddress> {
+  public async execute(cepNumber: string): Promise<IAddress | IError> {
     try {
       const addressFromDb = await this.AddressesRepository.findByCep(cepNumber);
       if (addressFromDb) return addressFromDb;
@@ -33,7 +42,10 @@ class GetAddress {
     }
 
     try {
-      const viaCepResponse = await httpGet<IAddress>(`https://viacep.com.br/ws/${cepNumber}/json/`);
+      const viaCepResponse = await httpGet<IAddress | IError>(`https://viacep.com.br/ws/${cepNumber}/json/`);
+      if (isError(viaCepResponse)) {
+        throw new AppError('CEP inválido');
+      }
 
       const formattedResponse = {
         ...viaCepResponse,
